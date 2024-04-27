@@ -1,5 +1,5 @@
 const inquirer = require("inquirer");
-const { employee_db } = require("./lib/Employee_Management");
+const { employee_db, department } = require("./lib/Employee_Management");
 
 managementList = [
   { selection: "View All Employess" },
@@ -80,7 +80,11 @@ const questions = [
 //  use the Inquirer Promise to send the file name and entered data to the writeToFile method
 async function init() {
   const selection = await inquirer.prompt(makeList());
-  const db = new employee_db();
+  //let db = new employee_db();
+  let dept = new department();
+  let sql = dept.viewDepartments();
+  dept.getData(sql);
+  dept.closeConnection();
   if (selection.transaction == 0) {
     console.log("here");
   }
