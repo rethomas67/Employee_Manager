@@ -32,16 +32,42 @@ const makeList = () => {
   };
 };
 
+const addDepartmentQuestions = [
+  {
+    type: "input",
+    name: "departmentName",
+    message: "What is the name of the department? ",
+  },
+];
+
+async function addDepartment(result) {
+  let departmentEntity = new department();
+  let sql = departmentEntity.addDepartment();
+  console.log(sql);
+  await departmentEntity.setData(sql, result).then(() => {
+    console.log("here");
+  });
+}
+
+async function addDepartmentPrompt() {
+  let result = [];
+  await inquirer.prompt(addDepartmentQuestions).then((data) => {
+    result = [data.departmentName];
+    addDepartment(result);
+    console.log("here3");
+    return data;
+  });
+  return true;
+}
+
 // Initialize the program with the questions array
 //  use the Inquirer Promise to send the file name and entered data to the writeToFile method
 async function init() {
   const selection = await inquirer.prompt(makeList());
   let departmentEntity;
   let roleEntity;
-  let employeeEntiy;
+  let employeeEntity;
   let sql = "";
-  let result;
-  let params = {};
 
   if (selection.transaction == 0) {
     employeeEntity = new employee();
@@ -72,7 +98,12 @@ async function init() {
     });
     departmentEntity.closeConnection();
   } else if (selection.transaction == 6) {
-    console.log("here");
+    await addDepartmentPrompt().then(() => {
+      console.log("here2");
+      //console.log(data);
+    });
+
+    init();
   }
 }
 // Function call to initialize app
