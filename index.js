@@ -1,5 +1,6 @@
 const inquirer = require("inquirer");
-const { employee_db, department } = require("./lib/Employee_Management");
+const mysql = require("mysql2");
+const { employee_db, department, role } = require("./lib/Employee_Management");
 
 managementList = [
   { selection: "View All Employess" },
@@ -80,15 +81,39 @@ const questions = [
 //  use the Inquirer Promise to send the file name and entered data to the writeToFile method
 async function init() {
   const selection = await inquirer.prompt(makeList());
-  //let db = new employee_db();
-  let dept = new department();
-  let sql = dept.viewDepartments();
-  dept.getData(sql);
-  dept.closeConnection();
+  let departmentEntity;
+  let roleEntity;
+  let sql = "";
+  let result;
+  let params = {};
+
   if (selection.transaction == 0) {
+    console.log("here");
+    init();
+  } else if (selection.transaction == 1) {
+    console.log("here");
+  } else if (selection.transaction == 2) {
+    console.log("here");
+  } else if (selection.transaction == 3) {
+    roleEntity = new role();
+    sql = roleEntity.viewRoles();
+    await roleEntity.getData(sql, function (err, data) {
+      console.table(data);
+      init();
+    });
+  } else if (selection.transaction == 4) {
+    console.log("here");
+  } else if (selection.transaction == 5) {
+    departmentEntity = new department();
+    sql = departmentEntity.viewDepartments();
+    await departmentEntity.getData(sql, function (err, data) {
+      console.table(data);
+      init();
+    });
+    departmentEntity.closeConnection();
+  } else if (selection.transaction == 6) {
     console.log("here");
   }
 }
-
 // Function call to initialize app
 init();
