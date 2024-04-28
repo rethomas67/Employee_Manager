@@ -43,9 +43,9 @@ const addDepartmentQuestions = [
 async function addDepartment(result) {
   let departmentEntity = new department();
   let sql = departmentEntity.addDepartment();
-  console.log(sql);
+
   await departmentEntity.setData(sql, result).then(() => {
-    console.log("here");
+    console.log(`Added ${result} to the database.`);
   });
 }
 
@@ -54,10 +54,107 @@ async function addDepartmentPrompt() {
   await inquirer.prompt(addDepartmentQuestions).then((data) => {
     result = [data.departmentName];
     addDepartment(result);
-    console.log("here3");
     return data;
   });
   return true;
+}
+
+const addRoleQuestions = (data) => {
+  const choice = data.map((item, index) => {
+    return {
+      name: item.name,
+      value: item.id,
+    };
+  });
+
+  return [
+    {
+      type: "input",
+      name: "roleName",
+      message: "What is the name of the role? ",
+    },
+    {
+      type: "input",
+      name: "salary",
+      message: "What is the salary of the role? ",
+    },
+    {
+      type: "list",
+      message: "What dept",
+      name: "department",
+      choices: choice,
+    },
+  ];
+};
+
+async function addRole(result) {
+  let roleEntity = new role();
+  let sql = roleEntity.addRole();
+
+  await roleEntity.setData(sql, result).then(() => {});
+}
+
+async function addRolePrompt() {
+  departmentEntity = new department();
+  sql = departmentEntity.viewDepartments();
+  await departmentEntity.getData(sql, function (err, departmentData) {
+    inquirer.prompt(addRoleQuestions(departmentData)).then((data) => {
+      result = [data.roleName, data.department, data.salary];
+      addRole(result);
+      console.log("a");
+      console.log(`Added ${data.roleName} to the database.`);
+      init();
+    });
+  });
+}
+
+const addEmployeeQuestions = (data) => {
+  const choice = data.map((item, index) => {
+    return {
+      name: item.name,
+      value: item.id,
+    };
+  });
+
+  return [
+    {
+      type: "input",
+      name: "roleName",
+      message: "What is the name of the role? ",
+    },
+    {
+      type: "input",
+      name: "salary",
+      message: "What is the salary of the role? ",
+    },
+    {
+      type: "list",
+      message: "What dept",
+      name: "department",
+      choices: choice,
+    },
+  ];
+};
+
+async function addEmployee(result) {
+  let roleEntity = new role();
+  let sql = roleEntity.addRole();
+
+  await roleEntity.setData(sql, result).then(() => {});
+}
+
+async function addEmployeePrompt() {
+  departmentEntity = new department();
+  sql = departmentEntity.viewDepartments();
+  await departmentEntity.getData(sql, function (err, departmentData) {
+    inquirer.prompt(addRoleQuestions(departmentData)).then((data) => {
+      result = [data.roleName, data.department, data.salary];
+      addRole(result);
+      console.log("a");
+      console.log(`Added ${data.roleName} to the database.`);
+      init();
+    });
+  });
 }
 
 // Initialize the program with the questions array
@@ -77,7 +174,7 @@ async function init() {
       init();
     });
   } else if (selection.transaction == 1) {
-    console.log("here");
+    await addEmployeePrompt().then(() => {});
   } else if (selection.transaction == 2) {
     console.log("here");
   } else if (selection.transaction == 3) {
@@ -88,7 +185,7 @@ async function init() {
       init();
     });
   } else if (selection.transaction == 4) {
-    console.log("here");
+    await addRolePrompt().then(() => {});
   } else if (selection.transaction == 5) {
     departmentEntity = new department();
     sql = departmentEntity.viewDepartments();
