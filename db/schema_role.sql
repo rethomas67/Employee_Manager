@@ -4,5 +4,6 @@ CREATE TABLE role(
     salary DECIMAL(10,2) DEFAULT(0),
     department_id INT NOT NULL,
     FOREIGN KEY (department_id) REFERENCES department(id)
+    ON DELETE CASCADE
 );
 DESCRIBE role;
