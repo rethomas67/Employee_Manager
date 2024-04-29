@@ -8,7 +8,7 @@ const {
 } = require("./lib/Employee_Management");
 
 managementList = [
-  { selection: "View All Employess" },
+  { selection: "View All Employees" },
   { selection: "Add Employee" },
   { selection: "Update Employee Role" },
   { selection: "View All Roles" },
@@ -80,7 +80,7 @@ const addRoleQuestions = (data) => {
     },
     {
       type: "list",
-      message: "What dept",
+      message: "Which department does the role belong to?",
       name: "department",
       choices: choice,
     },
@@ -108,10 +108,17 @@ async function addRolePrompt() {
   });
 }
 
-const addEmployeeQuestions = (data) => {
-  const choice = data.map((item, index) => {
+const addEmployeeQuestions = (roleData, managerData) => {
+  const roleChoice = roleData.map((item, index) => {
     return {
-      name: item.name,
+      name: item.title,
+      value: item.id,
+    };
+  });
+
+  const managerChoice = managerData.map((item, index) => {
+    return {
+      name: item.manager,
       value: item.id,
     };
   });
@@ -119,41 +126,145 @@ const addEmployeeQuestions = (data) => {
   return [
     {
       type: "input",
-      name: "roleName",
-      message: "What is the name of the role? ",
+      name: "firstName",
+      message: "What is the employess first name? ",
     },
     {
       type: "input",
-      name: "salary",
-      message: "What is the salary of the role? ",
+      name: "lastName",
+      message: "What is the employess last name? ",
     },
     {
       type: "list",
-      message: "What dept",
-      name: "department",
-      choices: choice,
+      message: "What is the employees role?",
+      name: "role",
+      choices: roleChoice,
+    },
+    {
+      type: "list",
+      message: "Who is the employees manager?",
+      name: "manager",
+      choices: managerChoice,
     },
   ];
 };
 
 async function addEmployee(result) {
-  let roleEntity = new role();
-  let sql = roleEntity.addRole();
+  let employeeEntity = new employee();
+  let sql = employeeEntity.addEmployee();
 
-  await roleEntity.setData(sql, result).then(() => {});
+  await employeeEntity.setData(sql, result).then(() => {});
 }
 
-async function addEmployeePrompt() {
-  departmentEntity = new department();
-  sql = departmentEntity.viewDepartments();
-  await departmentEntity.getData(sql, function (err, departmentData) {
-    inquirer.prompt(addRoleQuestions(departmentData)).then((data) => {
-      result = [data.roleName, data.department, data.salary];
-      addRole(result);
-      console.log("a");
-      console.log(`Added ${data.roleName} to the database.`);
+async function addManagerPrompt(roleData) {
+  let employeeEntity = new employee();
+  sqlManager = employeeEntity.viewManagers();
+
+  await employeeEntity.getData(sqlManager, function (err, managerData) {
+    inquirer.prompt(addManagerQuestions(roleData, managerData)).then((data) => {
+      let managerId = null;
+      console.log(data.manager);
+      if (data.manager > 0) {
+        managerId = data.manager;
+      }
+      result = [data.firstName, data.lastName, data.role, managerId];
+      addEmployee(result);
+
+      console.log(`Added ${data.firstName} ${data.lastName} to the database.`);
+
       init();
     });
+  });
+}
+
+async function getEmployeeRole() {
+  let roleEntity = new role();
+  sqlRole = roleEntity.viewRoles();
+
+  await roleEntity.getData(sqlRole, function (err, roleData) {
+    addManagerPrompt(roleData);
+  });
+}
+/*
+const addEmployeeQuestions = (roleData, managerData) => {
+  const roleChoice = roleData.map((item, index) => {
+    return {
+      name: item.title,
+      value: item.id,
+    };
+  });
+
+  const managerChoice = managerData.map((item, index) => {
+    return {
+      name: item.manager,
+      value: item.id,
+    };
+  });
+
+  return [
+    {
+      type: "input",
+      name: "firstName",
+      message: "What is the employess first name? ",
+    },
+    {
+      type: "input",
+      name: "lastName",
+      message: "What is the employess last name? ",
+    },
+    {
+      type: "list",
+      message: "What is the employees role?",
+      name: "role",
+      choices: roleChoice,
+    },
+    {
+      type: "list",
+      message: "Who is the employees manager?",
+      name: "manager",
+      choices: managerChoice,
+    },
+  ];
+};
+
+async function addEmployee(result) {
+  let employeeEntity = new employee();
+  let sql = employeeEntity.addEmployee();
+
+  await employeeEntity.setData(sql, result).then(() => {});
+}
+*/
+async function addEmployeePrompt(roleData) {
+  let employeeEntity = new employee();
+  sqlEmployee = employeeEntity.viewEmployees();
+
+  await employeeEntity.getData(sqlEmployee, function (err, employeeData) {
+    inquirer
+      .prompt(addEmployeeQuestions(roleData, employeeData))
+      .then((data) => {
+        let managerId = null;
+        console.log(data.manager);
+        if (data.manager > 0) {
+          managerId = data.manager;
+        }
+        result = [data.firstName, data.lastName, data.role, managerId];
+        addEmployee(result);
+
+        console.log(
+          `Added ${data.firstName} ${data.lastName} to the database.`
+        );
+
+        init();
+      });
+  });
+}
+
+async function changeEmployeeRole() {
+  let roleEntity = new role();
+  sqlRole = roleEntity.viewRoles();
+
+  await roleEntity.getData(sqlRole, function (err, roleData) {
+    addEmployeePrompt(roleData);
   });
 }
 
@@ -168,15 +279,15 @@ async function init() {
 
   if (selection.transaction == 0) {
     employeeEntity = new employee();
-    sql = employeeEntity.viewRoles();
+    sql = employeeEntity.viewEmployees();
     await employeeEntity.getData(sql, function (err, data) {
       console.table(data);
       init();
     });
   } else if (selection.transaction == 1) {
-    await addEmployeePrompt().then(() => {});
+    await getEmployeeRole().then(() => {});
   } else if (selection.transaction == 2) {
-    console.log("here");
+    await changeEmployeeRole().then(() => {});
   } else if (selection.transaction == 3) {
     roleEntity = new role();
     sql = roleEntity.viewRoles();
@@ -195,10 +306,7 @@ async function init() {
     });
     departmentEntity.closeConnection();
   } else if (selection.transaction == 6) {
-    await addDepartmentPrompt().then(() => {
-      console.log("here2");
-      //console.log(data);
-    });
+    await addDepartmentPrompt().then(() => {});
 
     init();
   }
