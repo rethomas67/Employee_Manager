@@ -108,7 +108,7 @@ async function addRolePrompt() {
   });
 }
 
-const addEmployeeQuestions = (roleData, managerData) => {
+const addManagerQuestions = (roleData, managerData) => {
   const roleChoice = roleData.map((item, index) => {
     return {
       name: item.title,
@@ -185,7 +185,7 @@ async function getEmployeeRole() {
     addManagerPrompt(roleData);
   });
 }
-/*
+
 const addEmployeeQuestions = (roleData, managerData) => {
   const roleChoice = roleData.map((item, index) => {
     return {
@@ -194,72 +194,58 @@ const addEmployeeQuestions = (roleData, managerData) => {
     };
   });
 
-  const managerChoice = managerData.map((item, index) => {
+  const employeeChoice = managerData.map((item, index) => {
     return {
-      name: item.manager,
+      name: item.name,
       value: item.id,
     };
   });
 
   return [
     {
-      type: "input",
-      name: "firstName",
-      message: "What is the employess first name? ",
-    },
-    {
-      type: "input",
-      name: "lastName",
-      message: "What is the employess last name? ",
+      type: "list",
+      message: "Which employee's role do you want to update?",
+      name: "name",
+      choices: employeeChoice,
     },
     {
       type: "list",
-      message: "What is the employees role?",
+      message:
+        "Which employee's role do you want to assign to the selected user?",
       name: "role",
       choices: roleChoice,
-    },
-    {
-      type: "list",
-      message: "Who is the employees manager?",
-      name: "manager",
-      choices: managerChoice,
     },
   ];
 };
 
-async function addEmployee(result) {
+async function changeEmployeeRole(result) {
   let employeeEntity = new employee();
-  let sql = employeeEntity.addEmployee();
+  let sql = employeeEntity.updateEmployee();
 
   await employeeEntity.setData(sql, result).then(() => {});
 }
-*/
+
 async function addEmployeePrompt(roleData) {
   let employeeEntity = new employee();
-  sqlEmployee = employeeEntity.viewEmployees();
+  sqlEmployee = employeeEntity.viewEmployeeNames();
+  console.log(sqlEmployee);
 
   await employeeEntity.getData(sqlEmployee, function (err, employeeData) {
     inquirer
       .prompt(addEmployeeQuestions(roleData, employeeData))
       .then((data) => {
-        let managerId = null;
-        console.log(data.manager);
-        if (data.manager > 0) {
-          managerId = data.manager;
-        }
-        result = [data.firstName, data.lastName, data.role, managerId];
-        addEmployee(result);
+        result = [data.role, data.name];
+        console.log(result);
+        changeEmployeeRole(result);
 
-        console.log(
-          `Added ${data.firstName} ${data.lastName} to the database.`
-        );
+        console.log(`Updated employee's role.`);
 
         init();
       });
   });
 }
 
-async function changeEmployeeRole() {
+async function changeRole() {
   let roleEntity = new role();
   sqlRole = roleEntity.viewRoles();
 
@@ -287,7 +273,7 @@ async function init() {
   } else if (selection.transaction == 1) {
     await getEmployeeRole().then(() => {});
   } else if (selection.transaction == 2) {
-    await changeEmployeeRole().then(() => {});
+    await changeRole().then(() => {});
   } else if (selection.transaction == 3) {
     roleEntity = new role();
     sql = roleEntity.viewRoles();
