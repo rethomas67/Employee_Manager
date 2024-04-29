@@ -1,12 +1,14 @@
+//import inquirer and mysql2
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
+//import the the models of a datbase and it's tables queries
 const {
   employee_db,
   department,
   role,
   employee,
 } = require("./lib/Employee_Management");
-
+//Inquirer main menu list
 managementList = [
   { selection: "View All Employees" },
   { selection: "Add Employee" },
@@ -24,6 +26,7 @@ managementList = [
   { selection: "View the Total Utilized Budget of a Department" },
 ];
 
+//map the data and index of the menu array and return the menu list to the console
 const makeList = () => {
   const choice = managementList.map((selection, index) => {
     return {
@@ -38,7 +41,7 @@ const makeList = () => {
     choices: choice,
   };
 };
-
+//Inquirer question for adding a new department
 const addDepartmentQuestions = [
   {
     type: "input",
@@ -46,7 +49,7 @@ const addDepartmentQuestions = [
     message: "What is the name of the department? ",
   },
 ];
-
+//execute the query to add a department with the parameter result
 async function addDepartment(result) {
   let departmentEntity = new department();
   let sql = departmentEntity.addDepartment();
@@ -55,7 +58,7 @@ async function addDepartment(result) {
     console.log(`Added ${result} to the database.`);
   });
 }
-
+//save the user input from the department prompt and use it as a parameter
 async function addDepartmentPrompt() {
   let result = [];
   await inquirer.prompt(addDepartmentQuestions).then((data) => {
@@ -65,7 +68,7 @@ async function addDepartmentPrompt() {
   });
   return true;
 }
-
+//map adding role array contents and index
 const addRoleQuestions = (data) => {
   const choice = data.map((item, index) => {
     return {
@@ -73,7 +76,7 @@ const addRoleQuestions = (data) => {
       value: item.id,
     };
   });
-
+  //inquirer menu for adding a role
   return [
     {
       type: "input",
@@ -93,14 +96,14 @@ const addRoleQuestions = (data) => {
     },
   ];
 };
-
+//execute inserting a new role with a parameter
 async function addRole(result) {
   let roleEntity = new role();
   let sql = roleEntity.addRole();
 
   await roleEntity.setData(sql, result).then(() => {});
 }
-
+//retrieve the department list to display in the menu then call the methods for the menu and exection of the query
 async function addRolePrompt() {
   departmentEntity = new department();
   sql = departmentEntity.viewDepartments();
@@ -113,7 +116,7 @@ async function addRolePrompt() {
     });
   });
 }
-
+//map the list and index for role
 const addManagerQuestions = (roleData, managerData) => {
   const roleChoice = roleData.map((item, index) => {
     return {
@@ -121,14 +124,14 @@ const addManagerQuestions = (roleData, managerData) => {
       value: item.id,
     };
   });
-
+  //map the list and index for managers
   const managerChoice = managerData.map((item, index) => {
     return {
       name: item.manager,
       value: item.id,
     };
   });
-
+  //Inquirer questions to add a new employee
   return [
     {
       type: "input",
@@ -154,20 +157,21 @@ const addManagerQuestions = (roleData, managerData) => {
     },
   ];
 };
-
+//excute the query with a parameter to add a new employee
 async function addEmployee(result) {
   let employeeEntity = new employee();
   let sql = employeeEntity.addEmployee();
 
   await employeeEntity.setData(sql, result).then(() => {});
 }
-
+//retrieve the list of managers and run the methods for the menu and execution of the query
 async function addManagerPrompt(roleData) {
   let employeeEntity = new employee();
   sqlManager = employeeEntity.viewManagers();
 
   await employeeEntity.getData(sqlManager, function (err, managerData) {
     inquirer.prompt(addManagerQuestions(roleData, managerData)).then((data) => {
+      //if None is select the parameter is null, otherwise the manager id
       let managerId = null;
       if (data.manager > 0) {
         managerId = data.manager;
@@ -181,7 +185,7 @@ async function addManagerPrompt(roleData) {
     });
   });
 }
-
+//retrieve the list of roles and pass it to addManagerPrompt
 async function getEmployeeRole() {
   let roleEntity = new role();
   sqlRole = roleEntity.viewRoles();
@@ -190,7 +194,7 @@ async function getEmployeeRole() {
     addManagerPrompt(roleData);
   });
 }
-
+//map the data and index for roles and employees
 const addEmployeeQuestions = (roleData, managerData) => {
   const roleChoice = roleData.map((item, index) => {
     return {
@@ -205,7 +209,7 @@ const addEmployeeQuestions = (roleData, managerData) => {
       value: item.id,
     };
   });
-
+  //menu questions for updating an employees role
   return [
     {
       type: "list",
@@ -222,14 +226,14 @@ const addEmployeeQuestions = (roleData, managerData) => {
     },
   ];
 };
-
+//execute the query with parameters to update an employees role
 async function changeEmployeeRole(result) {
   let employeeEntity = new employee();
   let sql = employeeEntity.updateEmployee();
 
   await employeeEntity.setData(sql, result).then(() => {});
 }
-
+//retrieve the employee name list
 async function addEmployeePrompt(roleData) {
   let employeeEntity = new employee();
   sqlEmployee = employeeEntity.viewEmployeeNames();
@@ -239,6 +243,7 @@ async function addEmployeePrompt(roleData) {
       .prompt(addEmployeeQuestions(roleData, employeeData))
       .then((data) => {
         result = [data.role, data.name];
+        console.log(result);
         changeEmployeeRole(result);
 
         console.log(`Updated employee's role.`);
@@ -247,7 +252,7 @@ async function addEmployeePrompt(roleData) {
       });
   });
 }
-
+//retrieve the list of role and pass it to addEmployeePrompt
 async function changeRole() {
   let roleEntity = new role();
   sqlRole = roleEntity.viewRoles();
@@ -256,7 +261,7 @@ async function changeRole() {
     addEmployeePrompt(roleData);
   });
 }
-
+//map the data and indexes for managers and employees
 const changeEmployeeQuestions = (managerData, employeeData) => {
   const managerChoice = managerData.map((item, index) => {
     return {
@@ -271,7 +276,7 @@ const changeEmployeeQuestions = (managerData, employeeData) => {
       value: item.id,
     };
   });
-
+  //display the menu to update an employees manager
   return [
     {
       type: "list",
@@ -288,14 +293,14 @@ const changeEmployeeQuestions = (managerData, employeeData) => {
     },
   ];
 };
-
+//run the update query with parameters to change an employees manager
 async function changeEmployeeManager(result) {
   let employeeEntity = new employee();
   let sql = employeeEntity.updateEmployeeManager();
 
   await employeeEntity.setData(sql, result).then(() => {});
 }
-
+//retrieve the list of managers and send it to include it in the menu
 async function changeManagerPrompt(employeeData) {
   let employeeEntity = new employee();
   sqlManager = employeeEntity.viewActiveManagers();
@@ -303,6 +308,7 @@ async function changeManagerPrompt(employeeData) {
   await employeeEntity.getData(sqlManager, function (err, managerData) {
     inquirer
       .prompt(changeEmployeeQuestions(managerData, employeeData))
+      //call the method with the parameters selected by the user to run the query
       .then((data) => {
         result = [data.manager, data.name];
         changeEmployeeManager(result);
@@ -313,7 +319,7 @@ async function changeManagerPrompt(employeeData) {
       });
   });
 }
-
+//retrieve a list of employees with managers
 async function changeManager() {
   let employeeEntity = new employee();
   sqlEmployee = employeeEntity.viewManagedEmployeeNames();
@@ -322,7 +328,7 @@ async function changeManager() {
     changeManagerPrompt(employeeData);
   });
 }
-
+//map the data and index of managers
 const viewEmployeeByManagerQuestions = (managerData) => {
   const managerChoice = managerData.map((item, index) => {
     return {
@@ -330,7 +336,7 @@ const viewEmployeeByManagerQuestions = (managerData) => {
       value: item.id,
     };
   });
-
+  //generate inquirer menu
   return [
     {
       type: "list",
@@ -340,7 +346,7 @@ const viewEmployeeByManagerQuestions = (managerData) => {
     },
   ];
 };
-
+//view the employees who work under the selected manager
 async function viewEmployeeByManager(result) {
   let employeeEntity = new employee();
   let sql = employeeEntity.viewEmployeeNamesByManager();
@@ -354,7 +360,7 @@ async function viewEmployeeByManager(result) {
     }
   );
 }
-
+//retrieve employees who are managers and send it to the menu prompt
 async function employeeByManager() {
   let employeeEntity = new employee();
   sqlManager = employeeEntity.viewActiveManagers();
@@ -362,13 +368,14 @@ async function employeeByManager() {
   await employeeEntity.getData(sqlManager, function (err, managerData) {
     inquirer
       .prompt(viewEmployeeByManagerQuestions(managerData))
+      //query the employees under the selected manager
       .then((data) => {
         result = [data.manager];
         viewEmployeeByManager(result);
       });
   });
 }
-
+//map the data and index for departments
 const viewEmployeeByDepartmentQuestions = (departmentData) => {
   const departmentChoice = departmentData.map((item, index) => {
     return {
@@ -376,7 +383,7 @@ const viewEmployeeByDepartmentQuestions = (departmentData) => {
       value: item.id,
     };
   });
-
+  //create the prompt to select from the list of departments
   return [
     {
       type: "list",
@@ -386,7 +393,7 @@ const viewEmployeeByDepartmentQuestions = (departmentData) => {
     },
   ];
 };
-
+//run the query to view the employees with an override call to getData with paramaters
 async function viewEmployeeByDepartment(result) {
   let employeeEntity = new employee();
   let sql = employeeEntity.viewEmployeesByDepartment();
@@ -400,21 +407,22 @@ async function viewEmployeeByDepartment(result) {
     }
   );
 }
-
+//pass the departments result to the menu
 async function employeeByDepartment() {
-  let employeeEntity = new employee();
-  sqlDepartment = employeeEntity.viewDepartments();
+  let departmentEntity = new department();
+  sqlDepartment = departmentEntity.viewDepartments();
 
-  await employeeEntity.getData(sqlDepartment, function (err, departmentData) {
+  await departmentEntity.getData(sqlDepartment, function (err, departmentData) {
     inquirer
       .prompt(viewEmployeeByDepartmentQuestions(departmentData))
+      //pass the selected department as a parameter for the query
       .then((data) => {
         result = [data.department];
         viewEmployeeByDepartment(result);
       });
   });
 }
-
+//map the department data and indexes
 const viewDepartmentBudgetQuestions = (departmentData) => {
   const departmentChoice = departmentData.map((item, index) => {
     return {
@@ -422,7 +430,7 @@ const viewDepartmentBudgetQuestions = (departmentData) => {
       value: item.id,
     };
   });
-
+  //display the department selection list
   return [
     {
       type: "list",
@@ -432,12 +440,12 @@ const viewDepartmentBudgetQuestions = (departmentData) => {
     },
   ];
 };
-
+//call the aggregate department budget query with the getdata parameter override
 async function viewDepartmentBudget(result) {
-  let employeeEntity = new employee();
-  let sql = employeeEntity.viewDepartmentBudget();
+  let departmentEntity = new department();
+  let sql = departmentEntity.viewDepartmentBudget();
 
-  await employeeEntity.getData(
+  await departmentEntity.getData(
     sql,
     result,
     function (err, departmentBudgetData) {
@@ -446,21 +454,26 @@ async function viewDepartmentBudget(result) {
     }
   );
 }
-
+//retrieve the departments for the user selection list
 async function utilizedBudget() {
-  let employeeEntity = new employee();
-  sqlDepartment = employeeEntity.viewDepartments();
+  let departmentEntity = new department();
+  sqlDepartment = departmentEntity.viewDepartments();
 
-  await employeeEntity.getData(sqlDepartment, function (err, departmentData) {
+  await departmentEntity.getData(sqlDepartment, function (err, departmentData) {
     inquirer
       .prompt(viewDepartmentBudgetQuestions(departmentData))
+      //send the selected department parameter to the call to viewDepartmentBudget
       .then((data) => {
         result = [data.department];
         viewDepartmentBudget(result);
       });
   });
 }
-
+/*
+  delete departments, roles, and employees are similar to the previous functions
+  The selected department(id), role(id), and employee(id) are passed in as a parameter
+  to delete the selection from the table
+*/
 const deleteDepartmentQuestions = (departmentData) => {
   const departmentChoice = departmentData.map((item, index) => {
     return {
@@ -488,10 +501,10 @@ async function deleteDepartment(result) {
 }
 
 async function deleteDepartmentPrompt() {
-  let employeeEntity = new employee();
-  sqlDepartment = employeeEntity.viewDepartments();
+  let departmentEntity = new department();
+  sqlDepartment = departmentEntity.viewDepartments();
 
-  await employeeEntity.getData(sqlDepartment, function (err, departmentData) {
+  await departmentEntity.getData(sqlDepartment, function (err, departmentData) {
     inquirer.prompt(deleteDepartmentQuestions(departmentData)).then((data) => {
       result = [data.department];
       deleteDepartment(result);
@@ -575,8 +588,8 @@ async function deleteEmployeePrompt() {
   });
 }
 
-// Initialize the program with the questions array
-//  use the Inquirer Promise to senda the file name and entered data to the writeToFile method
+// Initialize the program with the main questions array
+//  return the selection for further processing
 async function init() {
   const selection = await inquirer.prompt(makeList());
   let departmentEntity;
@@ -584,54 +597,68 @@ async function init() {
   let employeeEntity;
   let sql = "";
 
+  //View all employees
   if (selection.transaction == 0) {
     employeeEntity = new employee();
+    //call the select query for all of the employees
     sql = employeeEntity.viewEmployees();
     await employeeEntity.getData(sql, function (err, data) {
       console.table(data);
       init();
     });
+    //Add Employee
   } else if (selection.transaction == 1) {
     await getEmployeeRole().then(() => {});
+    //Update Employee Role
   } else if (selection.transaction == 2) {
     await changeRole().then(() => {});
+    //View All Roles
   } else if (selection.transaction == 3) {
     roleEntity = new role();
     sql = roleEntity.viewRoles();
+    //call the query to view all roles
     await roleEntity.getData(sql, function (err, data) {
       console.table(data);
       init();
     });
+    //Add Role
   } else if (selection.transaction == 4) {
     await addRolePrompt().then(() => {});
+    //View All Departments
   } else if (selection.transaction == 5) {
     departmentEntity = new department();
     sql = departmentEntity.viewDepartments();
+    //call the query to view departments
     await departmentEntity.getData(sql, function (err, data) {
       console.table(data);
       init();
     });
     departmentEntity.closeConnection();
+    //Add Department
   } else if (selection.transaction == 6) {
     await addDepartmentPrompt().then(() => {});
 
     init();
+    //Update Employee Managers
   } else if (selection.transaction == 7) {
     await changeManager().then(() => {});
+    //View Employees by manager
   } else if (selection.transaction == 8) {
     await employeeByManager().then(() => {});
+    //View Employees by Department
   } else if (selection.transaction == 9) {
     await employeeByDepartment().then(() => {});
 
-    init();
+    //Delete Departments
   } else if (selection.transaction == 10) {
     await deleteDepartmentPrompt().then(() => {});
+    //Delete Roles
   } else if (selection.transaction == 11) {
     await deleteRolePrompt().then(() => {});
+    //Delete Employees
   } else if (selection.transaction == 12) {
     await deleteEmployeePrompt().then(() => {});
-
-    init();
+    //Total Utilized Budget
   } else if (selection.transaction == 13) {
     await utilizedBudget().then(() => {});
   }
