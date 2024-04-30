@@ -243,7 +243,7 @@ async function addEmployeePrompt(roleData) {
       .prompt(addEmployeeQuestions(roleData, employeeData))
       .then((data) => {
         result = [data.role, data.name];
-        console.log(result);
+
         changeEmployeeRole(result);
 
         console.log(`Updated employee's role.`);
