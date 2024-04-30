@@ -37,7 +37,7 @@ Screencastify link:
 https://drive.google.com/file/d/15dUYOMul4f5KyRN70oG2Zfv5ayZXdbiI/view
 
 The link to the GitHub repository is:
-https://github.com/rethomas67/Dynamic_ReadMe/tree/main/Develop
+https://github.com/rethomas67/Employee_Manager
 
 ## Credits
 
